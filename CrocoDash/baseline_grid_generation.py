@@ -210,38 +210,31 @@ def get_raw_data(cases: List, cache_dir: Path):
             )
 
 
-def generate_forcings(objs: List, cache_dir: Path):
+def generate_forcings(cases: List, cache_dir: Path):
     """
     Generate forcing files for each grid using raw data from cache_dir.
     """
     print("\n-- Preparing raw data for forcing generation --")
-    raw_data = get_raw_data(objs, cache_dir)
+    get_raw_data(cases, cache_dir)
 
     forcings = []
-    for obj in objs:
-        print(f"Generating forcing for grid: {obj.name}")
-        raw_file = raw_data[obj.name]
-        # TODO: Replace this with real forcing generation logic.
-        # Example:
-        # forcing = Forcing.from_raw(raw_file, grid=obj)
-        forcing = f"Forcing_for_{obj.name}"  # placeholder
-        forcings.append(forcing)
+    for case in cases:
+        print(f"Generating forcing for grid: {case.name}")
+        case.process_forcings()
 
-    return forcings
+    return 
 
 
-def save_forcings_to_baseline(forcings: List, outdir: Path, prefix: str = ""):
+def save_forcings_to_baseline(cases: List, outdir: Path, prefix: str = ""):
     """
     Placeholder: write forcings to disk.
     Replace this with the appropriate write method for your forcing objects.
     """
     outdir.mkdir(parents=True, exist_ok=True)
-    for i, forcing in enumerate(forcings):
-        filename = f"{prefix + '_' if prefix else ''}forcing_{i}.nc"
-        outpath = outdir / filename
-        print(f"Writing forcing '{forcing}' -> {outpath}")
-        with open(outpath, "w") as f:
-            f.write("")  # placeholder
+    for i, case in enumerate(cases):
+       for file in (case.inputdir/"ocnice").iterdir():
+            if file.is_file() and (file.name.startswith("forcing_") or file.name.startswith("init_")):
+                shutil.copy2(file, outdir / file.name)
 
 
 def parse_args():
