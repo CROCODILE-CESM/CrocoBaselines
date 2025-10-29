@@ -45,7 +45,18 @@ def generate_grids() -> List:
         name="south_prime_seam",
     )
 
-    return [grid_north_hem_basic, grid_south_long_seam, grid_south_prime_seam]
+    # Global Grid
+    glofas_grid = Grid(
+        lenx=360,
+        leny       = 150,         # grid length in y direction
+        cyclic_x=True   ,    
+        ystart     = -60,       # start/end 10 degrees above/below poles to avoid singularity
+        resolution = 0.05,
+        name = "GLOFAS",
+    )
+
+
+    return [grid_north_hem_basic, grid_south_long_seam, grid_south_prime_seam,glofas_grid]
 
 def generate_bathys(grids) -> List:
     """
@@ -60,22 +71,25 @@ def generate_bathys(grids) -> List:
             min_depth = 9.5, # in meters
         )
         print(f"Generating bathymetry for grid: {grid.name}")
-
-        try:
-            topo.set_from_dataset(
-                bathymetry_path = bathymetry_path,
+        if grid.name == "GLOFAS":
+            print("GLOFAS grid is too big, just setting spoon depth for bathy")
+            topo.set_spoon(10)
+        else:
+            try:
+                topo.set_from_dataset(
+                    bathymetry_path = bathymetry_path,
+                    longitude_coordinate_name="lon",
+                    latitude_coordinate_name="lat",
+                    vertical_coordinate_name="elevation",
+                    write_to_file = False
+                )
+            except:
+                topo.interpolate_from_file(
+                file_path = bathymetry_path,
                 longitude_coordinate_name="lon",
                 latitude_coordinate_name="lat",
-                vertical_coordinate_name="elevation",
-                write_to_file = False
+                vertical_coordinate_name="elevation"
             )
-        except:
-            topo.interpolate_from_file(
-            file_path = bathymetry_path,
-            longitude_coordinate_name="lon",
-            latitude_coordinate_name="lat",
-            vertical_coordinate_name="elevation"
-        )
         topos.append(topo)
     return topos
 
