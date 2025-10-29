@@ -112,48 +112,6 @@ def generate_bathys(grids) -> list:
     return topos
 
 
-def save_grids_to_baseline(grids: List, outdir: Path, prefix: str = ""):
-    outdir.mkdir(parents=True, exist_ok=True)
-    if not grids:
-        print("No grids to save (generate_grids returned empty list).")
-        return
-    for i, grid in enumerate(grids):
-        name = getattr(grid, "name", None) or f"grid_{i}"
-        filename = f"{prefix + '_' if prefix else ''}{name}.nc"
-        outpath = outdir / filename
-        print(f"Writing grid '{name}' -> {outpath}")
-        grid.write_supergrid(outpath)
-
-
-def save_vgrids_to_baseline(grids: List, vgrids, outdir: Path, prefix: str = ""):
-    outdir.mkdir(parents=True, exist_ok=True)
-    if not grids:
-        print("No grids to save (generate_grids returned empty list).")
-        return
-    for i, grid in enumerate(grids):
-        name = (getattr(grid, "name", None) or f"vgrid_{i}") + "_vgrid"
-        filename = f"{prefix + '_' if prefix else ''}{name}.nc"
-        outpath = outdir / filename
-        print(f"Writing vgrid '{name}' -> {outpath}")
-        vgrids[i].write(outpath)
-
-
-def save_bathys_to_baseline(
-    topos: List, outdir: Path, prefix: str = "", cache_dir=None
-):
-    outdir.mkdir(parents=True, exist_ok=True)
-    if cache_dir is not None:
-        (cache_dir / "topos").mkdir(exist_ok=True)
-    for i, topo in enumerate(topos):
-        name = getattr(topo._grid, "name", None) or f"bathy_{i}"
-        filename = f"{prefix + '_' if prefix else ''}{name}_bathy.nc"
-        outpath = outdir / filename
-        print(f"Writing bathymetry '{name}' -> {outpath}")
-        topo.write_topo(outpath)  # assuming Topo implements `write()`
-        if cache_dir is not None:
-            topo.write_topo(cache_dir / "topos" / (topo._grid.name + "_topo.nc"))
-
-
 def generate_cases(topos, vgrids, names, cache_dir, cesmroot):
     cases = []
     for i, name in enumerate(names):
@@ -222,7 +180,49 @@ def generate_forcings(cases: List, cache_dir: Path):
         print(f"Generating forcing for grid: {case.name}")
         case.process_forcings()
 
-    return 
+    return
+
+
+def save_grids_to_baseline(grids: List, outdir: Path, prefix: str = ""):
+    outdir.mkdir(parents=True, exist_ok=True)
+    if not grids:
+        print("No grids to save (generate_grids returned empty list).")
+        return
+    for i, grid in enumerate(grids):
+        name = getattr(grid, "name", None) or f"grid_{i}"
+        filename = f"{prefix + '_' if prefix else ''}{name}.nc"
+        outpath = outdir / filename
+        print(f"Writing grid '{name}' -> {outpath}")
+        grid.write_supergrid(outpath)
+
+
+def save_vgrids_to_baseline(grids: List, vgrids, outdir: Path, prefix: str = ""):
+    outdir.mkdir(parents=True, exist_ok=True)
+    if not grids:
+        print("No grids to save (generate_grids returned empty list).")
+        return
+    for i, grid in enumerate(grids):
+        name = (getattr(grid, "name", None) or f"vgrid_{i}") + "_vgrid"
+        filename = f"{prefix + '_' if prefix else ''}{name}.nc"
+        outpath = outdir / filename
+        print(f"Writing vgrid '{name}' -> {outpath}")
+        vgrids[i].write(outpath)
+
+
+def save_bathys_to_baseline(
+    topos: List, outdir: Path, prefix: str = "", cache_dir=None
+):
+    outdir.mkdir(parents=True, exist_ok=True)
+    if cache_dir is not None:
+        (cache_dir / "topos").mkdir(exist_ok=True)
+    for i, topo in enumerate(topos):
+        name = getattr(topo._grid, "name", None) or f"bathy_{i}"
+        filename = f"{prefix + '_' if prefix else ''}{name}_bathy.nc"
+        outpath = outdir / filename
+        print(f"Writing bathymetry '{name}' -> {outpath}")
+        topo.write_topo(outpath)  # assuming Topo implements `write()`
+        if cache_dir is not None:
+            topo.write_topo(cache_dir / "topos" / (topo._grid.name + "_topo.nc"))
 
 
 def save_forcings_to_baseline(cases: List, outdir: Path, prefix: str = ""):
@@ -232,8 +232,10 @@ def save_forcings_to_baseline(cases: List, outdir: Path, prefix: str = ""):
     """
     outdir.mkdir(parents=True, exist_ok=True)
     for i, case in enumerate(cases):
-       for file in (case.inputdir/"ocnice").iterdir():
-            if file.is_file() and (file.name.startswith("forcing_") or file.name.startswith("init_")):
+        for file in (case.inputdir / "ocnice").iterdir():
+            if file.is_file() and (
+                file.name.startswith("forcing_") or file.name.startswith("init_")
+            ):
                 shutil.copy2(file, outdir / file.name)
 
 
