@@ -124,9 +124,9 @@ def generate_cases(topos, vgrids, names, cache_dir, cesmroot):
             ocn_grid=topos[i]._grid,
             ocn_vgrid=vgrids[i],
             ocn_topo=topos[i],
-            project="CESM0030",
+            project="NCGD0011",
             override=False,
-            machine="derecho",
+            machine="CESM_NOT_PORTED",
             compset="CR_JRA",
         )
         cases.append(case)
